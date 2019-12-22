@@ -119,6 +119,7 @@ namespace encryptCS
                         break;
                     case "g":
                         KeyGen("key.txt");
+                        Console.WriteLine("key was generated");
                         break;
                     case "c":
                         break;
