@@ -64,7 +64,7 @@ namespace encryptCS
                 plainBytes = new byte[fileStream.Length];
                 //creating encryptor
                 var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-                //opening the targeted file and eraising its content
+                //creating a temp file
                 using (FileStream fileStream2 = new FileStream("temp.txt", FileMode.Create))
                 {
                     //opening a cypto stream on the targeted file stream using the encryptor
@@ -74,37 +74,45 @@ namespace encryptCS
                             int fileLength = 0;
                             while(true)
                             {
+                                //if file Length - what we did is smaller than 1024
                                 if((int) fileStream.Length - fileLength < 1024)
                                 {
+                                    //but only if its bigger than 0
                                     if((int) fileStream.Length - fileLength > 0)
                                     {
+                                        //reading file to plaing bytes
                                         fileStream.Read(plainBytes, 0, (int) fileStream.Length - fileLength);
+                                        //wrting plain bytes to temp
                                         cryptoStream.Write(plainBytes, 0, (int) fileStream.Length - fileLength);
-                                        break;
                                     }
+                                    break;
                                 }
+                                //reading file to plain bytes
                                 fileStream.Read(plainBytes, 0, 1024);
+                                //adding to file length
                                 fileLength = fileLength + 1024;
+                                //writing plain bytes to temp
                                 cryptoStream.Write(plainBytes, 0, 1024);
                             }
                         }
                     }                                                                                                                                          
                 }
             }
+            //moving temp.txt to the targeted file
             File.Copy("temp.txt", fileName, true);
             File.Delete("temp.txt");
         }
 
         static void Decrypt(string fileName, Aes aes)
         {
-            byte[] plainBytes;
+            byte[] encryptedBytes;
             //opening the targeted file
             using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
             {
-                plainBytes = new byte[fileStream.Length];
+                encryptedBytes = new byte[fileStream.Length];
                 //creating encryptor
                 var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-                //opening the targeted file and eraising its content
+                //creating a temp file
                 using (FileStream fileStream2 = new FileStream("temp.txt", FileMode.Create))
                 {
                     //opening a cypto stream on the targeted file stream using the encryptor
@@ -114,23 +122,31 @@ namespace encryptCS
                             int fileLength = 0;
                             while (true)
                             {
+                                //if file length  - what we did < then 1024
                                 if ((int)fileStream.Length - fileLength < 1024)
                                 {
+                                    //but only if its bigger than 0
                                     if ((int)fileStream.Length - fileLength > 0)
                                     {
-                                        fileStream.Read(plainBytes, 0, (int)fileStream.Length - fileLength);
-                                        cryptoStream.Write(plainBytes, 0, (int)fileStream.Length - fileLength);
-                                        break;
+                                        //reading file to encrypted bytes
+                                        fileStream.Read(encryptedBytes, 0, (int)fileStream.Length - fileLength);
+                                        //writing encrypted bytes into the temp file
+                                        cryptoStream.Write(encryptedBytes, 0, (int)fileStream.Length - fileLength);
                                     }
+                                    break;
                                 }
-                                fileStream.Read(plainBytes, 0, 1024);
+                                //read to encrypted bytes
+                                fileStream.Read(encryptedBytes, 0, 1024);
+                                //add 1024 to what we did
                                 fileLength = fileLength + 1024;
-                                cryptoStream.Write(plainBytes, 0, 1024);
+                                //write to temp
+                                cryptoStream.Write(encryptedBytes, 0, 1024);
                             }
                         }
                     }
                 }
             }
+            //moving temp to the targeted file
             File.Copy("temp.txt", fileName, true);
             File.Delete("temp.txt");
         }
