@@ -173,6 +173,19 @@ namespace encryptCS
                 switch (option)
                 {
                     case "e":
+                        //asking if its a folder
+                        Console.WriteLine("are you encrypting a full folder?");
+                        if (Console.ReadLine() == "yes")
+                        {
+                            Console.WriteLine("what folder do you want to encrypt");
+                            string folderName = Console.ReadLine();
+                            string[] folder = Directory.GetFiles(folderName, "*", SearchOption.AllDirectories);
+                            foreach(string file in folder)
+                            {
+                                Encrypt(file, aes);
+                            }
+                            break;
+                        }
                         //asking what file to encrypt
                         Console.WriteLine("What file do you want to encrypt?");
                         fileName = Console.ReadLine();
@@ -180,6 +193,19 @@ namespace encryptCS
                         Encrypt(fileName, aes);
                         break;
                     case "d":
+                        //asking if its a folder
+                        Console.WriteLine("are you decrypting a full folder?");
+                        if (Console.ReadLine() == "yes")
+                        {
+                            Console.WriteLine("what folder do you want to decrypt");
+                            string folderName = Console.ReadLine();
+                            string[] folder = Directory.GetFiles(folderName, "*", SearchOption.AllDirectories);
+                            foreach (string file in folder)
+                            {
+                                Decrypt(file, aes);
+                            }
+                            break;
+                        }
                         //asking what file to decrypt
                         Console.WriteLine("What file do you want to Decrypt");
                         fileName = Console.ReadLine();
