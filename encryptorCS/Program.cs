@@ -62,45 +62,77 @@ namespace encryptCS
             using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
             {
                 plainBytes = new byte[fileStream.Length];
-                //insetrtin the targeted faile's content into plainBytes
-                fileStream.Read(plainBytes, 0, (int) fileStream.Length);
-            }
-            //creating encryptor
-            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-            //opening the targeted file and eraising its content
-            using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
-            {
-                //opening a cypto stream on the targeted file stream using the encryptor
-                using (CryptoStream cryptoStream = new CryptoStream(fileStream, encryptor, CryptoStreamMode.Write))
+                //creating encryptor
+                var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+                //opening the targeted file and eraising its content
+                using (FileStream fileStream2 = new FileStream("temp.txt", FileMode.Create))
                 {
-                    //writing the plainBytes into the stream via the encryptor so the Bytes get encrypted
-                    cryptoStream.Write(plainBytes, 0, plainBytes.Length);
+                    //opening a cypto stream on the targeted file stream using the encryptor
+                    {
+                        using(CryptoStream cryptoStream = new CryptoStream(fileStream2, encryptor, CryptoStreamMode.Write))
+                        {
+                            int fileLength = 0;
+                            while(true)
+                            {
+                                if((int) fileStream.Length - fileLength < 1024)
+                                {
+                                    if((int) fileStream.Length - fileLength > 0)
+                                    {
+                                        fileStream.Read(plainBytes, 0, (int) fileStream.Length - fileLength);
+                                        cryptoStream.Write(plainBytes, 0, (int) fileStream.Length - fileLength);
+                                        break;
+                                    }
+                                }
+                                fileStream.Read(plainBytes, 0, 1024);
+                                fileLength = fileLength + 1024;
+                                cryptoStream.Write(plainBytes, 0, 1024);
+                            }
+                        }
+                    }                                                                                                                                          
                 }
             }
+            File.Copy("temp.txt", fileName, true);
+            File.Delete("temp.txt");
         }
 
         static void Decrypt(string fileName, Aes aes)
         {
-            byte[] encryptedBytes;
-            //opening teargeted file
+            byte[] plainBytes;
+            //opening the targeted file
             using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
             {
-                encryptedBytes = new byte[fileStream.Length];
-                //reading the encrypted file and inserting its content into encryptedBytes
-                fileStream.Read(encryptedBytes, 0, (int) fileStream.Length);
-            }
-            //creating decryptor
-            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-            //opening the targeted file but aslo eraising its content
-            using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
-            {
-                //creating crypto stream to the targeted file stream using the decryptor
-                using (CryptoStream cryptoStream = new CryptoStream(fileStream, decryptor, CryptoStreamMode.Write))
+                plainBytes = new byte[fileStream.Length];
+                //creating encryptor
+                var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+                //opening the targeted file and eraising its content
+                using (FileStream fileStream2 = new FileStream("temp.txt", FileMode.Create))
                 {
-                    //writing the encrypted bytes to the file stream via decryptor witch will decrypt the bytes
-                    cryptoStream.Write(encryptedBytes, 0, encryptedBytes.Length);
+                    //opening a cypto stream on the targeted file stream using the encryptor
+                    {
+                        using (CryptoStream cryptoStream = new CryptoStream(fileStream2, decryptor, CryptoStreamMode.Write))
+                        {
+                            int fileLength = 0;
+                            while (true)
+                            {
+                                if ((int)fileStream.Length - fileLength < 1024)
+                                {
+                                    if ((int)fileStream.Length - fileLength > 0)
+                                    {
+                                        fileStream.Read(plainBytes, 0, (int)fileStream.Length - fileLength);
+                                        cryptoStream.Write(plainBytes, 0, (int)fileStream.Length - fileLength);
+                                        break;
+                                    }
+                                }
+                                fileStream.Read(plainBytes, 0, 1024);
+                                fileLength = fileLength + 1024;
+                                cryptoStream.Write(plainBytes, 0, 1024);
+                            }
+                        }
+                    }
                 }
             }
+            File.Copy("temp.txt", fileName, true);
+            File.Delete("temp.txt");
         }
 
 
