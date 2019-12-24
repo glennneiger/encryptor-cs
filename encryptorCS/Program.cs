@@ -115,33 +115,31 @@ namespace encryptCS
                 //creating a temp file
                 using (FileStream fileStream2 = new FileStream("temp.txt", FileMode.Create))
                 {
-                    //opening a cypto stream on the targeted file stream using the encryptor
+                    //opening a cypto stream on the targeted file stream using the decryptor
+                    using (CryptoStream cryptoStream = new CryptoStream(fileStream2, decryptor, CryptoStreamMode.Write))
                     {
-                        using (CryptoStream cryptoStream = new CryptoStream(fileStream2, decryptor, CryptoStreamMode.Write))
+                        int fileLength = 0;
+                        while (true)
                         {
-                            int fileLength = 0;
-                            while (true)
+                            //if file length  - what we did < then 1024
+                            if ((int)fileStream.Length - fileLength < 1024)
                             {
-                                //if file length  - what we did < then 1024
-                                if ((int)fileStream.Length - fileLength < 1024)
+                                //but only if its bigger than 0
+                                if ((int)fileStream.Length - fileLength > 0)
                                 {
-                                    //but only if its bigger than 0
-                                    if ((int)fileStream.Length - fileLength > 0)
-                                    {
-                                        //reading file to encrypted bytes
-                                        fileStream.Read(encryptedBytes, 0, (int)fileStream.Length - fileLength);
-                                        //writing encrypted bytes into the temp file
-                                        cryptoStream.Write(encryptedBytes, 0, (int)fileStream.Length - fileLength);
-                                    }
-                                    break;
+                                    //reading file to encrypted bytes
+                                    fileStream.Read(encryptedBytes, 0, (int)fileStream.Length - fileLength);
+                                    //writing encrypted bytes into the temp file
+                                    cryptoStream.Write(encryptedBytes, 0, (int)fileStream.Length - fileLength);
                                 }
-                                //read to encrypted bytes
-                                fileStream.Read(encryptedBytes, 0, 1024);
-                                //add 1024 to what we did
-                                fileLength = fileLength + 1024;
-                                //write to temp
-                                cryptoStream.Write(encryptedBytes, 0, 1024);
+                                break;
                             }
+                            //read to encrypted bytes
+                            fileStream.Read(encryptedBytes, 0, 1024);
+                            //add 1024 to what we did
+                            fileLength = fileLength + 1024;
+                            //write to temp
+                            cryptoStream.Write(encryptedBytes, 0, 1024);
                         }
                     }
                 }
@@ -174,15 +172,24 @@ namespace encryptCS
                 {
                     case "e":
                         //asking if its a folder
-                        Console.WriteLine("are you encrypting a full folder?");
+                        Console.WriteLine("are you encrypting a full folder? type yes if yes");
                         if (Console.ReadLine() == "yes")
                         {
                             Console.WriteLine("what folder do you want to encrypt");
+                            bool keyEncrypted = false;
                             string folderName = Console.ReadLine();
                             string[] folder = Directory.GetFiles(folderName, "*", SearchOption.AllDirectories);
                             foreach(string file in folder)
                             {
                                 Encrypt(file, aes);
+                                if(file == "key.key")
+                                {
+                                    keyEncrypted = true;
+                                }
+                            }
+                            if(keyEncrypted == true)
+                            {
+                                Decrypt("key.txt", aes);
                             }
                             break;
                         }
@@ -191,13 +198,14 @@ namespace encryptCS
                         fileName = Console.ReadLine();
                         //encrypting file
                         Encrypt(fileName, aes);
+                        Decrypt("key.txt", aes);
                         break;
                     case "d":
                         //asking if its a folder
-                        Console.WriteLine("are you decrypting a full folder?");
+                        Console.WriteLine("are you decrypting a full folder? type yes if yes");
                         if (Console.ReadLine() == "yes")
                         {
-                            Console.WriteLine("what folder do you want to decrypt");
+                            Console.WriteLine("what folder do you want to decrypt.");
                             string folderName = Console.ReadLine();
                             string[] folder = Directory.GetFiles(folderName, "*", SearchOption.AllDirectories);
                             foreach (string file in folder)
