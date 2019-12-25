@@ -110,7 +110,7 @@ namespace encryptCS
             using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
             {
                 encryptedBytes = new byte[fileStream.Length];
-                //creating encryptor
+                //creating decryptor
                 var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
                 //creating a temp file
                 using (FileStream fileStream2 = new FileStream("temp.txt", FileMode.Create))
@@ -152,10 +152,12 @@ namespace encryptCS
 
         static void Main(string[] args)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             //loading key from key.txt
-            Aes aes = KeyLoad("Key.txt");
+            Aes aes = KeyLoad("Key.key");
             string fileName;
             string option = "";
+            string yesOrNo;
             //loop
             while (true)
             {
@@ -171,39 +173,51 @@ namespace encryptCS
                 switch (option)
                 {
                     case "e":
+                        bool keyEncrypted = false;
                         //asking if its a folder
-                        Console.WriteLine("are you encrypting a full folder? type yes if yes");
-                        if (Console.ReadLine() == "yes")
+                        Console.WriteLine("are you encrypting a full folder?");
+                        yesOrNo = Console.ReadLine();
+                        if (yesOrNo == "yes")
                         {
+                            //asking what folder to encrypt
                             Console.WriteLine("what folder do you want to encrypt");
-                            bool keyEncrypted = false;
                             string folderName = Console.ReadLine();
+                            //taking files in folder
                             string[] folder = Directory.GetFiles(folderName, "*", SearchOption.AllDirectories);
-                            foreach(string file in folder)
+                            //for each file in folder
+                            foreach (string file in folder)
                             {
+                                //encrypting file with the key
                                 Encrypt(file, aes);
-                                if(file == "key.key")
+                                //if the file is the key file than decrypt key
+                                if (file == "key.key")
                                 {
                                     keyEncrypted = true;
                                 }
                             }
-                            if(keyEncrypted == true)
+                            if (keyEncrypted == true)
                             {
-                                Decrypt("key.txt", aes);
+                                Decrypt("key.key", aes);
                             }
-                            break;
                         }
-                        //asking what file to encrypt
-                        Console.WriteLine("What file do you want to encrypt?");
-                        fileName = Console.ReadLine();
-                        //encrypting file
-                        Encrypt(fileName, aes);
-                        Decrypt("key.txt", aes);
+                        else if (yesOrNo == "no")
+                        {
+                            //asking what file to encrypt
+                            Console.WriteLine("What file do you want to encrypt?");
+                            fileName = Console.ReadLine();
+                            //encrypting file
+                            Encrypt(fileName, aes);
+                            if (fileName == "key.key")
+                            {
+                                Decrypt("key.key", aes);
+                            }
+                        }
                         break;
                     case "d":
                         //asking if its a folder
-                        Console.WriteLine("are you decrypting a full folder? type yes if yes");
-                        if (Console.ReadLine() == "yes")
+                        Console.WriteLine("are you decrypting a full folder?");
+                        yesOrNo = Console.ReadLine();
+                        if (yesOrNo == "yes")
                         {
                             Console.WriteLine("what folder do you want to decrypt.");
                             string folderName = Console.ReadLine();
@@ -212,21 +226,24 @@ namespace encryptCS
                             {
                                 Decrypt(file, aes);
                             }
-                            break;
                         }
-                        //asking what file to decrypt
-                        Console.WriteLine("What file do you want to Decrypt");
-                        fileName = Console.ReadLine();
-                        //decrypting file
-                        Decrypt(fileName, aes);
+                        else if(yesOrNo == "no")
+                        {
+                            //asking what file to decrypt
+                            Console.WriteLine("What file do you want to Decrypt");
+                            fileName = Console.ReadLine();
+                            //decrypting file
+                            Decrypt(fileName, aes);
+                        }
                         break;
                     case "g":
                         //generating a new key
-                        KeyGen("key.txt");
+                        aes = KeyGen("key.key");
                         Console.WriteLine("key was generated");
                         break;
                     case "c":
                         //closing program
+                        Environment.Exit(1);
                         break;
                 }
             }
