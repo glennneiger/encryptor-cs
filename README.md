@@ -8,7 +8,7 @@
 
 ####``this encryptor is using the aes algorithem witch is a very secure symetrical algorithem``
 ####``meaning it uses the same key to encrypt/decrypt.``
-##*_*the key  is 256 bit(32 byte) and there are 2 to the power of 256(1.1579209e+77) companations*_*
+##*_*the key  is 256 bit(32 byte) and there are 2 to the power of 256(1.1579209e+77) combanations*_*
 
 
 
