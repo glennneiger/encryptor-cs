@@ -55,7 +55,7 @@ namespace encryptCS
         }
 
 
-        static void Encrypt(string fileName, ICryptoTransform cryptoTransform)
+        static void Transform(string fileName, ICryptoTransform cryptoTransform)
         {
             byte[] plainBytes;
             //opening the targeted file
@@ -101,51 +101,6 @@ namespace encryptCS
             File.Delete("temp.txt");
         }
 
-        static void Decrypt(string fileName, Aes aes)
-        {
-            byte[] encryptedBytes;
-            //opening the targeted file
-            using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
-            {
-                encryptedBytes = new byte[fileStream.Length];
-                //creating decryptor
-                var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-                //creating a temp file
-                using (FileStream fileStream2 = new FileStream("temp.txt", FileMode.Create))
-                {
-                    //opening a cypto stream on the targeted file stream using the decryptor
-                    using (CryptoStream cryptoStream = new CryptoStream(fileStream2, decryptor, CryptoStreamMode.Write))
-                    {
-                        int fileLength = 0;
-                        while (true)
-                        {
-                            //if file length  - what we did < then 1024
-                            if ((int)fileStream.Length - fileLength < 1024)
-                            {
-                                //but only if its bigger than 0
-                                if ((int)fileStream.Length - fileLength > 0)
-                                {
-                                    //reading file to encrypted bytes
-                                    fileStream.Read(encryptedBytes, 0, (int)fileStream.Length - fileLength);
-                                    //writing encrypted bytes into the temp file
-                                    cryptoStream.Write(encryptedBytes, 0, (int)fileStream.Length - fileLength);
-                                }
-                                break;
-                            }
-                            //read to encrypted bytes
-                            fileStream.Read(encryptedBytes, 0, 1024);
-                            //add 1024 to what we did
-                            fileLength = fileLength + 1024;
-                            //write to temp
-                            cryptoStream.Write(encryptedBytes, 0, 1024);
-                        }
-                    }
-                }
-            }
-            //moving temp to the targeted file
-            File.Copy("temp.txt", fileName, true);
-            File.Delete("temp.txt");
-        }
 
 
         static void Main(string[] args)
@@ -153,9 +108,10 @@ namespace encryptCS
             Console.ForegroundColor = ConsoleColor.Red;
             //loading key from key.txt
             Aes aes = KeyLoad("Key.key");
+            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
             string pathName;
             string option = "";
-            string yesOrNo;
             //loop
             while (true)
             {
@@ -175,15 +131,15 @@ namespace encryptCS
                         Console.WriteLine("what do you want to encrypt");
                         pathName = Console.ReadLine();
                         //creating encryptor
-                        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
 
                         if (File.Exists(pathName))
                         {
                             //encrypting file
-                            Encrypt(pathName, encryptor);
+                            Transform(pathName, encryptor);
                             if (pathName == "key.key")
                             {
-                                Decrypt("key.key", aes);
+                                
+                                Transform("key.key", decryptor);
                             }
                         }
                         else if(Directory.Exists(pathName))
@@ -194,7 +150,7 @@ namespace encryptCS
                             foreach (string file in folder)
                             {
                                 //encrypting file with the key
-                                Encrypt(file, encryptor);
+                                Transform(file, encryptor);
                                 //if the file is the key file than decrypt key
                                 if (file == "key.key")
                                 {
@@ -203,7 +159,7 @@ namespace encryptCS
                             }
                             if (keyEncrypted == true)
                             {
-                                Decrypt("key.key", aes);
+                                Transform("key.key", decryptor);
                             }
                         }
                         break;
@@ -214,7 +170,7 @@ namespace encryptCS
                         if(File.Exists(pathName))
                         {
                             //decrypting file
-                            Decrypt(pathName, aes);
+                            Transform(pathName, decryptor);
                             break;
                         }
                         else if(Directory.Exists(pathName))
@@ -222,7 +178,7 @@ namespace encryptCS
                             string[] folder = Directory.GetFiles(pathName, "*", SearchOption.AllDirectories);
                             foreach (string file in folder)
                             {
-                                Decrypt(file, aes);
+                                Transform(file, decryptor);
                             }
                         }
                         break;
