@@ -55,21 +55,19 @@ namespace encryptCS
         }
 
 
-        static void Encrypt(string fileName, Aes aes)
+        static void Encrypt(string fileName, ICryptoTransform cryptoTransform)
         {
             byte[] plainBytes;
             //opening the targeted file
             using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
             {
                 plainBytes = new byte[fileStream.Length];
-                //creating encryptor
-                var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
                 //creating a temp file
                 using (FileStream fileStream2 = new FileStream("temp.txt", FileMode.Create))
                 {
                     //opening a cypto stream on the targeted file stream using the encryptor
                     {
-                        using(CryptoStream cryptoStream = new CryptoStream(fileStream2, encryptor, CryptoStreamMode.Write))
+                        using(CryptoStream cryptoStream = new CryptoStream(fileStream2, cryptoTransform, CryptoStreamMode.Write))
                         {
                             int fileLength = 0;
                             while(true)
@@ -155,7 +153,7 @@ namespace encryptCS
             Console.ForegroundColor = ConsoleColor.Red;
             //loading key from key.txt
             Aes aes = KeyLoad("Key.key");
-            string fileName;
+            string pathName;
             string option = "";
             string yesOrNo;
             //loop
@@ -174,21 +172,29 @@ namespace encryptCS
                 {
                     case "e":
                         bool keyEncrypted = false;
-                        //asking if its a folder
-                        Console.WriteLine("are you encrypting a full folder?");
-                        yesOrNo = Console.ReadLine();
-                        if (yesOrNo == "yes")
+                        Console.WriteLine("what do you want to encrypt");
+                        pathName = Console.ReadLine();
+                        //creating encryptor
+                        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                        if (File.Exists(pathName))
                         {
-                            //asking what folder to encrypt
-                            Console.WriteLine("what folder do you want to encrypt");
-                            string folderName = Console.ReadLine();
+                            //encrypting file
+                            Encrypt(pathName, encryptor);
+                            if (pathName == "key.key")
+                            {
+                                Decrypt("key.key", aes);
+                            }
+                        }
+                        else if(Directory.Exists(pathName))
+                        {
                             //taking files in folder
-                            string[] folder = Directory.GetFiles(folderName, "*", SearchOption.AllDirectories);
+                            string[] folder = Directory.GetFiles(pathName, "*", SearchOption.AllDirectories);
                             //for each file in folder
                             foreach (string file in folder)
                             {
                                 //encrypting file with the key
-                                Encrypt(file, aes);
+                                Encrypt(file, encryptor);
                                 //if the file is the key file than decrypt key
                                 if (file == "key.key")
                                 {
@@ -200,40 +206,24 @@ namespace encryptCS
                                 Decrypt("key.key", aes);
                             }
                         }
-                        else if (yesOrNo == "no")
-                        {
-                            //asking what file to encrypt
-                            Console.WriteLine("What file do you want to encrypt?");
-                            fileName = Console.ReadLine();
-                            //encrypting file
-                            Encrypt(fileName, aes);
-                            if (fileName == "key.key")
-                            {
-                                Decrypt("key.key", aes);
-                            }
-                        }
                         break;
                     case "d":
-                        //asking if its a folder
-                        Console.WriteLine("are you decrypting a full folder?");
-                        yesOrNo = Console.ReadLine();
-                        if (yesOrNo == "yes")
+                        Console.WriteLine("what do you want to decrypt.");
+                            
+                        pathName = Console.ReadLine();
+                        if(File.Exists(pathName))
                         {
-                            Console.WriteLine("what folder do you want to decrypt.");
-                            string folderName = Console.ReadLine();
-                            string[] folder = Directory.GetFiles(folderName, "*", SearchOption.AllDirectories);
+                            //decrypting file
+                            Decrypt(pathName, aes);
+                            break;
+                        }
+                        else if(Directory.Exists(pathName))
+                        {
+                            string[] folder = Directory.GetFiles(pathName, "*", SearchOption.AllDirectories);
                             foreach (string file in folder)
                             {
                                 Decrypt(file, aes);
                             }
-                        }
-                        else if(yesOrNo == "no")
-                        {
-                            //asking what file to decrypt
-                            Console.WriteLine("What file do you want to Decrypt");
-                            fileName = Console.ReadLine();
-                            //decrypting file
-                            Decrypt(fileName, aes);
                         }
                         break;
                     case "g":
