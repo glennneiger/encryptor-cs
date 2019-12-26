@@ -139,7 +139,7 @@ namespace encryptCS
                         if (File.Exists(pathName))
                         {
                             //encrypting file
-                            Console.WriteLine($"encryptig: {pathName}");
+                            Console.WriteLine($"Encryptig: {pathName}");
                             await TransformAsync(pathName, encryptor);
                             if (pathName == "key.key")
                             {
@@ -154,7 +154,7 @@ namespace encryptCS
                             //for each file in folder
                             foreach (string file in folder)
                             {
-                                Console.WriteLine($"encryptig: {file}");
+                                Console.WriteLine($"Encryptig: {file}");
                                 //encrypting file with the key
                                 await TransformAsync(file, encryptor);
                                 //if the file is the key file than decrypt key
@@ -176,6 +176,7 @@ namespace encryptCS
                         if (File.Exists(pathName))
                         {
                             //decrypting file
+                            Console.WriteLine($"Decryting: {pathName}");
                             await TransformAsync(pathName, decryptor);
                             break;
                         }
