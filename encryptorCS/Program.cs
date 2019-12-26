@@ -168,17 +168,18 @@ namespace encryptCS
                                 await TransformAsync("key.key", decryptor);
                             }
                         }
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("Operation complete!");
+                        Console.ForegroundColor = ConsoleColor.Red;
                         break;
                     case "d":
                         Console.WriteLine("what do you want to decrypt.");
-
                         pathName = Console.ReadLine();
                         if (File.Exists(pathName))
                         {
                             //decrypting file
                             Console.WriteLine($"Decryting: {pathName}");
                             await TransformAsync(pathName, decryptor);
-                            break;
                         }
                         else if (Directory.Exists(pathName))
                         {
@@ -189,6 +190,9 @@ namespace encryptCS
                                 await TransformAsync(file, decryptor);
                             }
                         }
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("Operation complete!");
+                        Console.ForegroundColor = ConsoleColor.Red;
                         break;
                     case "g":
                         //generating a new key
